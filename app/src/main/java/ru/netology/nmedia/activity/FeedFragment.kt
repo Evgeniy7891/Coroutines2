@@ -2,6 +2,7 @@ package ru.netology.nmedia.activity
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -10,6 +11,10 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.snackbar.Snackbar
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import ru.netology.nmedia.R
 import ru.netology.nmedia.adapter.OnInteractionListener
 import ru.netology.nmedia.adapter.PostsAdapter
@@ -67,13 +72,22 @@ class FeedFragment : Fragment() {
             adapter.submitList(state.posts)
             binding.emptyText.isVisible = state.empty
         }
+            // полуработающий скролл
+        viewModel.scroll.observe(viewLifecycleOwner) {
+            CoroutineScope(Dispatchers.IO).launch {
+                delay(100)
+                if (it.last() == 1) {
+                    binding.list.scrollToPosition(0)
+                    it.remove(0)
+                }
+            }
+        }
 
         binding.swiperefresh.setOnRefreshListener {
             viewModel.refreshPosts()
         }
 
         binding.fab.setOnClickListener {
-            viewModel.saveNewPost()
             findNavController().navigate(R.id.action_feedFragment_to_newPostFragment)
         }
         return binding.root
